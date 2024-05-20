@@ -37,7 +37,6 @@
     dest: /tmp/
     remote_src: yes
     validate_certs: no
-  when: __check_prometheus_installation.stat.exists == false or not __check_prometheus_version.stdout == prometheus_version
 
 - name: move the binary to the final destination
   copy:
