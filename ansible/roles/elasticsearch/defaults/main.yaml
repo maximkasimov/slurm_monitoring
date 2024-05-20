@@ -1,0 +1,8 @@
+---
+# defaults for elasticsearch
+
+debian_elastic_yandex_mirror: https://mirror.yandex.ru/mirrors/elastic/7/
+debian_elastic_sources_file: elastic-7.x
+elastic_path_data: /var/lib/elasticsearch
+elastic_path_logs: /var/log/elasticsearch
+elastic_conf_dir: /etc/elasticsearch

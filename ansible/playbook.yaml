@@ -1,0 +1,20 @@
+---
+
+- name: install prom and es
+  hosts: monitoring_server
+  vars_files:
+    - defaults/main.yaml
+  become: true
+  roles:
+    - prometheus
+    - elasticsearch
+    - kibana
+
+- name: install node-exporter and fluentbit
+  hosts: monitoring_agents
+  vars_files:
+    - defaults/main.yaml
+  become: true
+  roles:
+    - node-exporter
+    - fluentbit

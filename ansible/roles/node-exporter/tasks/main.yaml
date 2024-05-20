@@ -1,0 +1,81 @@
+---
+# tasks for node-exporter
+
+- name: check if node exporter is already installed
+  stat:
+    path: "{{ node_exporter_path }}"
+  register: __check_node_exporter_installation
+
+- name: if node exporter exist get version
+  shell: "cat {{ node_exporter_service_file }} | grep Version | sed s/'.*Version '//g"
+  when: __check_node_exporter_installation.stat.exists == true
+  changed_when: false
+  register: __check_node_exporter_version
+
+- name: check if a file with a list of keys to launch node exporter exist
+  stat:
+    path: "/etc/default/{{ environment_file }}"
+  register: __check_node_exporter_keys
+
+- name: create node exporter user
+  user:
+    name: "{{ node_exporter_user }}"
+    append: true
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+
+- name: create node exporter config dir
+  file:
+    path: "{{ node_exporter_conf_dir }}"
+    state: directory
+    owner: "{{ node_exporter_user }}"
+    group: "{{ node_exporter_group }}"
+
+- name: download and unzip node exporter
+  unarchive:
+    src: "{{ node_exporter_install_file_link }}"
+    dest: /tmp/
+    remote_src: yes
+    validate_certs: no
+
+- name: move the binary to the final destination
+  copy:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
+    dest: "{{ node_exporter_path }}"
+    owner: "{{ node_exporter_user }}"
+    group: "{{ node_exporter_group }}"
+    mode: 0755
+    remote_src: yes
+  when: __check_node_exporter_installation.stat.exists == false or not __check_node_exporter_version.stdout == node_exporter_version
+
+- name: clean up tmp dir
+  file:
+    path: /tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/
+    state: absent
+
+- name: install node_exporter keys file
+  ansible.builtin.template:
+    src: node_exporter.j2
+    dest: "/etc/default/{{ environment_file }}"
+    owner: root
+    group: root
+    mode: 0660
+
+- name: install service
+  ansible.builtin.template:
+    src: node_exporter.service.j2
+    dest: "{{ node_exporter_service_file }}"
+    owner: root
+    group: root
+    mode: 0660
+  notify: reload_daemon_restart_node_exporter
+
+- name: force restart
+  meta: flush_handlers
+
+- name: start service
+  ansible.builtin.systemd:
+    name: node_exporter
+    state: started
+    enabled: true

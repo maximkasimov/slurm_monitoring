@@ -1,0 +1,12 @@
+---
+# defaults file for prometheus
+prometheus_version: "2.24.1"
+prometheus_path: /usr/local/bin/prometheus
+environment_file: prometheus
+prometheus_user: prometheus
+prometheus_group: prometheus
+prometheus_conf_dir: /etc/prometheus
+prometheus_service_file: /usr/lib/systemd/system/prometheus.service
+prometheus_config_file: "prometheus.yml"
+prometheus_tsdb_path: /var/lib/prometheus
+prometheus_install_file_link: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"

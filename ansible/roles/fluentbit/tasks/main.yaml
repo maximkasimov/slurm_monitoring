@@ -1,0 +1,26 @@
+---
+# tasks file for elasticsearch
+- name: Add GPG key
+  ansible.builtin.shell:
+    cmd: "curl https://packages.fluentbit.io/fluentbit.key | gpg --dearmor > /usr/share/keyrings/fluentbit-keyring.gpg"
+
+- name: Update sources lists
+  ansible.builtin.apt_repository:
+    repo: deb [signed-by=/usr/share/keyrings/fluentbit-keyring.gpg] https://packages.fluentbit.io/ubuntu/{{ ansible_distribution_release }} {{ ansible_distribution_release }} main
+    state: present
+
+- name: Update repositories cache and install fluentbit package
+  ansible.builtin.apt:
+    name: fluent-bit
+    update_cache: yes
+  notify: reload_daemon_restart_fluentbit
+
+- name: force restart
+  meta: flush_handlers
+
+- name: start service
+  ansible.builtin.systemd:
+    name: fluent-bit
+    state: started
+    enabled: true
+

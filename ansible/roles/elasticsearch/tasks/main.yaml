@@ -1,0 +1,31 @@
+---
+# tasks file for elasticsearch
+- name: add elastic repo from mirror
+  ansible.builtin.apt_repository:
+    repo: "deb [trusted=yes] {{ debian_elastic_yandex_mirror }} stable main"
+    state: present
+    filename: "{{ debian_elastic_sources_file }}"
+
+- name: Update repositories cache and install elasticsearch package
+  ansible.builtin.apt:
+    name: elasticsearch
+    update_cache: yes
+    timeout: 3600
+
+- name: copy elastic configuration
+  ansible.builtin.template:
+    src: elasticsearch.yaml.j2
+    dest: "{{ elastic_conf_dir }}/elasticsearch.yaml"
+    owner: elasticsearch
+    group: elasticsearch
+    mode: 0660
+  notify: reload_daemon_restart_elasticsearch
+
+- name: force restart
+  meta: flush_handlers
+
+- name: start service
+  ansible.builtin.systemd:
+    name: elasticsearch
+    state: started
+    enabled: true

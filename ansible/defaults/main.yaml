@@ -1,0 +1,7 @@
+---
+es_host: localhost
+es_http_port: 9200
+es_api_basic_auth_username: elastic
+es_api_basic_auth_password: password12345
+kibana_host_ip: 192.168.56.41
+kibana_host_port: 5601

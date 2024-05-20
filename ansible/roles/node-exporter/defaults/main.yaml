@@ -1,0 +1,10 @@
+---
+# defaults for node-exporter
+node_exporter_version: "0.18.1"
+node_exporter_path: /usr/local/bin/node_exporter
+environment_file: node_exporter
+node_exporter_user: node_exporter
+node_exporter_group: node_exporter
+node_exporter_conf_dir: /etc/node_exporter
+node_exporter_service_file: /usr/lib/systemd/system/node_exporter.service
+node_exporter_install_file_link: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"

@@ -1,0 +1,5 @@
+---
+# defaults for kibana
+
+kibana_conf_dir: /etc/kibana
+kibana_config_file: "kibana.yaml"
