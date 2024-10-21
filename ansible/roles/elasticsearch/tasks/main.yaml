@@ -10,7 +10,7 @@
   ansible.builtin.apt:
     name: elasticsearch
     update_cache: yes
-    timeout: 3600
+    lock_timeout: 3600
 
 - name: copy elastic configuration
   ansible.builtin.template:

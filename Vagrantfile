@@ -27,6 +27,7 @@ Vagrant.configure("2") do |config|
     server.vm.hostname = "server"
     server.vm.network "private_network", ip: "192.168.56.5"
     server.vm.provision "shell", inline: <<-SHELL
+      sudo apt update && sudo apt upgrade -y
       chmod 644 /home/vagrant/.ssh/test.pub
       cat /home/vagrant/.ssh/test.pub >> /home/vagrant/.ssh/authorized_keys
     SHELL

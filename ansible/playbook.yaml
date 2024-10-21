@@ -1,6 +1,6 @@
 ---
 
-- name: install prom and es
+- name: install prometheus and elasticsearch with kibana
   hosts: monitoring_server
   vars_files:
     - defaults/main.yaml
