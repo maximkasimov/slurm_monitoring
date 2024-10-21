@@ -8,7 +8,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "controlnode" do |controlnode|
     controlnode.vm.box = "ubuntu/focal64"
     controlnode.vm.hostname = "controlnode"
-    controlnode.vm.network "private_network", ip: "192.168.50.40"
+    controlnode.vm.network "private_network", ip: "192.168.56.4"
     controlnode.vm.synced_folder "./ansible","/home/vagrant/ansible"
     controlnode.vm.synced_folder "./files","/home/vagrant/files/"
     controlnode.vm.provision "file", source: "files/test", destination: "/home/vagrant/.ssh/"
@@ -25,7 +25,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "server" do |server|
     server.vm.box = "ubuntu/focal64"
     server.vm.hostname = "server"
-    server.vm.network "private_network", ip: "192.168.50.41"
+    server.vm.network "private_network", ip: "192.168.56.5"
     server.vm.provision "shell", inline: <<-SHELL
       chmod 644 /home/vagrant/.ssh/test.pub
       cat /home/vagrant/.ssh/test.pub >> /home/vagrant/.ssh/authorized_keys
