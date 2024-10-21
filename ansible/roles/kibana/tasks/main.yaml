@@ -17,7 +17,7 @@
 - name: force restart
   meta: flush_handlers
 
-- name: start service
+- name: start service kibana
   ansible.builtin.systemd:
     name: kibana
     state: started

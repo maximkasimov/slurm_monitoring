@@ -6,7 +6,7 @@
     path: "{{ node_exporter_path }}"
   register: __check_node_exporter_installation
 
-- name: if node exporter exist get version
+- name: check if node exporter exist get version
   shell: "cat {{ node_exporter_service_file }} | grep Version | sed s/'.*Version '//g"
   when: __check_node_exporter_installation.stat.exists == true
   changed_when: false
@@ -62,7 +62,7 @@
     group: root
     mode: 0660
 
-- name: install service
+- name: install service node exporter
   ansible.builtin.template:
     src: node_exporter.service.j2
     dest: "{{ node_exporter_service_file }}"
@@ -74,7 +74,7 @@
 - name: force restart
   meta: flush_handlers
 
-- name: start service
+- name: start service node exporter
   ansible.builtin.systemd:
     name: node_exporter
     state: started

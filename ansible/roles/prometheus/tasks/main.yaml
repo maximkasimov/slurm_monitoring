@@ -74,7 +74,7 @@
     group: root
     mode: 0660
 
-- name: install service
+- name: install service prometheus
   ansible.builtin.template:
     src: prometheus.service.j2
     dest: "{{ prometheus_service_file }}"
@@ -87,7 +87,7 @@
 - name: force restart
   meta: flush_handlers
 
-- name: start service
+- name: start service prometheus
   become: true
   ansible.builtin.systemd:
     name: prometheus
