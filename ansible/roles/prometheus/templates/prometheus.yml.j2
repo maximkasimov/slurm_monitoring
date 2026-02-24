@@ -1,0 +1,32 @@
+global:
+  scrape_interval: {{ prometheus_global_scrape_interval }}
+  evaluation_interval: {{ prometheus_global_evaluation_interval }}
+
+scrape_configs:
+{% for job in prometheus_scrape_jobs %}
+  - job_name: {{ job.job_name | to_json }}
+{% if job.scrape_interval is defined %}
+    scrape_interval: {{ job.scrape_interval }}
+{% endif %}
+    static_configs:
+{% for cfg in job.static_configs %}
+      - targets:
+{% for target in cfg.targets %}
+          - {{ target | to_json }}
+{% endfor %}
+{% if cfg.labels is defined %}
+        labels:
+{% for label_key, label_value in cfg.labels.items() %}
+          {{ label_key }}: {{ label_value | to_json }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% if prometheus_node_exporter_job_enabled | bool and (groups['monitoring_agents'] | default([]) | length > 0) %}
+  - job_name: {{ prometheus_node_exporter_job_name | to_json }}
+    static_configs:
+      - targets:
+{% for host in groups['monitoring_agents'] %}
+          - {{ (hostvars[host].ansible_host | default(host) ~ ':' ~ prometheus_node_exporter_port) | to_json }}
+{% endfor %}
+{% endif %}

@@ -1,12 +1,32 @@
 ---
-# defaults file for prometheus
-prometheus_version: "2.24.1"
-prometheus_path: /usr/local/bin/prometheus
-environment_file: prometheus
+# defaults for prometheus
+prometheus_version: "2.52.0"
 prometheus_user: prometheus
 prometheus_group: prometheus
-prometheus_conf_dir: /etc/prometheus
-prometheus_service_file: /usr/lib/systemd/system/prometheus.service
-prometheus_config_file: "prometheus.yml"
-prometheus_tsdb_path: /var/lib/prometheus
-prometheus_install_file_link: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+
+prometheus_binary_path: /usr/local/bin/prometheus
+prometheus_config_dir: /etc/prometheus
+prometheus_config_file: prometheus.yml
+prometheus_data_dir: /var/lib/prometheus
+prometheus_service_file: /etc/systemd/system/prometheus.service
+
+prometheus_archive: "prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+prometheus_download_url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/{{ prometheus_archive }}"
+prometheus_extract_dir: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64"
+prometheus_download_dest: "/tmp/{{ prometheus_archive }}"
+prometheus_validate_certs: true
+
+prometheus_web_listen_address: ":9090"
+prometheus_extra_args: []
+prometheus_global_scrape_interval: 15s
+prometheus_global_evaluation_interval: 15s
+
+prometheus_scrape_jobs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - "localhost:9090"
+
+prometheus_node_exporter_job_enabled: true
+prometheus_node_exporter_job_name: node_exporter
+prometheus_node_exporter_port: 9100

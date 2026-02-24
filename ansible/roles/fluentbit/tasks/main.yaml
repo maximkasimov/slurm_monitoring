@@ -1,26 +1,40 @@
 ---
-# tasks file for fluent-bit
-- name: Add GPG key fluent-bit
-  ansible.builtin.shell:
-    cmd: "curl https://packages.fluentbit.io/fluentbit.key | gpg --dearmor > /usr/share/keyrings/fluentbit-keyring.gpg"
+- name: Ensure apt transport dependencies are installed
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+    state: present
+    update_cache: true
 
-- name: Update sources lists fluent-bit 
-  ansible.builtin.apt_repository:
-    repo: deb [signed-by=/usr/share/keyrings/fluentbit-keyring.gpg] https://packages.fluentbit.io/ubuntu/{{ ansible_distribution_release }} {{ ansible_distribution_release }} main
+- name: Add fluent-bit apt key
+  ansible.builtin.apt_key:
+    url: "{{ fluentbit_apt_key_url }}"
     state: present
 
-- name: Update repositories cache and install fluent-bit package
+- name: Add fluent-bit apt repository
+  ansible.builtin.apt_repository:
+    repo: "{{ fluentbit_apt_repo }}"
+    state: present
+
+- name: Install fluent-bit package
   ansible.builtin.apt:
     name: fluent-bit
-    update_cache: yes
-  notify: reload_daemon_restart_fluentbit
+    state: present
+    update_cache: true
 
-- name: force restart
-  meta: flush_handlers
+- name: Install fluent-bit configuration
+  ansible.builtin.template:
+    src: fluent-bit.conf.j2
+    dest: "{{ fluentbit_config_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart fluent-bit
 
-- name: start service fluent-bit
+- name: Ensure fluent-bit service is enabled and running
   ansible.builtin.systemd:
     name: fluent-bit
     state: started
     enabled: true
-

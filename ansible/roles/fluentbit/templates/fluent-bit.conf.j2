@@ -1,0 +1,20 @@
+[SERVICE]
+    Flush        {{ fluentbit_flush_seconds }}
+    Daemon       Off
+    Log_Level    {{ fluentbit_log_level }}
+
+[INPUT]
+    Name         systemd
+    Tag          {{ fluentbit_journald_tag }}
+    DB           {{ fluentbit_journald_db }}
+    Read_From_Tail On
+
+[OUTPUT]
+    Name         es
+    Match        {{ fluentbit_output_match }}
+    Host         {{ fluentbit_output_host }}
+    Port         {{ fluentbit_output_port }}
+    Index        {{ fluentbit_output_index }}
+    Type         {{ fluentbit_output_type }}
+    Suppress_Type_Name {{ fluentbit_output_suppress_type_name | bool | ternary('On', 'Off') }}
+    Retry_Limit  {{ fluentbit_output_retry_limit | string }}

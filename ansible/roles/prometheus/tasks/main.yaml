@@ -1,94 +1,73 @@
 ---
-# tasks for prometheus
-- name: check if prometheus is already installed
-  stat:
-    path: "{{ prometheus_path }}"
-  register: __check_prometheus_installation
+- name: Ensure prometheus group exists
+  ansible.builtin.group:
+    name: "{{ prometheus_group }}"
+    system: true
 
-- name: get version if prometheus is already installed
-  shell: "cat {{ prometheus_service_file }} | grep Version | sed s/'.*Version '//g"
-  when: __check_prometheus_installation.stat.exists == true
-  changed_when: false
-  register: __check_prometheus_version
-
-- name: check if a file with a list of keys to launch prometheus exist
-  stat:
-    path: "/etc/default/{{ environment_file }}"
-  register: __check_prometheus_keys
-
-- name: create prometheus user
-  user:
+- name: Ensure prometheus user exists
+  ansible.builtin.user:
     name: "{{ prometheus_user }}"
-    append: true
+    group: "{{ prometheus_group }}"
     shell: /usr/sbin/nologin
     system: true
     create_home: false
 
-- name: create prometheus config dir
-  file:
-    path: "{{ prometheus_conf_dir }}"
+- name: Ensure prometheus directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
     state: directory
-    owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_group }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "{{ prometheus_config_dir }}", owner: root, group: "{{ prometheus_group }}", mode: "0750" }
+    - { path: "{{ prometheus_data_dir }}", owner: "{{ prometheus_user }}", group: "{{ prometheus_group }}", mode: "0750" }
 
-- name: download and unzip prometheus
-  unarchive:
-    src: "{{ prometheus_install_file_link }}"
-    dest: /tmp/
-    remote_src: yes
-    validate_certs: no
+- name: Download prometheus archive
+  ansible.builtin.get_url:
+    url: "{{ prometheus_download_url }}"
+    dest: "{{ prometheus_download_dest }}"
+    mode: "0644"
+    validate_certs: "{{ prometheus_validate_certs }}"
 
-- name: move the binary to the final destination
-  copy:
-    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/prometheus"
-    dest: "{{ prometheus_path }}"
-    owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_group }}"
-    mode: 0755
-    remote_src: yes
-  when: __check_prometheus_installation.stat.exists == false or not __check_prometheus_version.stdout == prometheus_version
+- name: Extract prometheus archive
+  ansible.builtin.unarchive:
+    src: "{{ prometheus_download_dest }}"
+    dest: /tmp
+    remote_src: true
+    creates: "{{ prometheus_extract_dir }}/prometheus"
 
-- name: copy prometheus config file
+- name: Install prometheus binary
   ansible.builtin.copy:
-    src: /tmp/prometheus-{{ prometheus_version }}.linux-amd64/prometheus.yml
-    dest: "{{ prometheus_conf_dir }}"
-    remote_src: yes
-
-- name: create prometheus tsdb dir
-  file:
-    path: "{{ prometheus_tsdb_path }}"
-    state: directory
-    owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_group }}"
-
-- name: clean up tmp dir
-  file:
-    path: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/"
-    state: absent
-
-- name: install prometheus keys file
-  ansible.builtin.template:
-    src: prometheus.j2
-    dest: "/etc/default/{{ environment_file }}"
+    src: "{{ prometheus_extract_dir }}/prometheus"
+    dest: "{{ prometheus_binary_path }}"
     owner: root
     group: root
-    mode: 0660
+    mode: "0755"
+    remote_src: true
+  notify: Restart prometheus
 
-- name: install service prometheus
+- name: Install prometheus configuration
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: "{{ prometheus_config_dir }}/{{ prometheus_config_file }}"
+    owner: root
+    group: "{{ prometheus_group }}"
+    mode: "0640"
+  notify: Reload prometheus
+
+- name: Install prometheus systemd unit
   ansible.builtin.template:
     src: prometheus.service.j2
     dest: "{{ prometheus_service_file }}"
     owner: root
     group: root
-    mode: 0660
+    mode: "0644"
   notify:
-    - reload_daemon_restart_prometheus
+    - Reload systemd
+    - Restart prometheus
 
-- name: force restart
-  meta: flush_handlers
-
-- name: start service prometheus
-  become: true
+- name: Ensure prometheus service is enabled and running
   ansible.builtin.systemd:
     name: prometheus
     state: started

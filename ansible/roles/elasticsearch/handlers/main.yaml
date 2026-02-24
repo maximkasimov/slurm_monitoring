@@ -1,8 +1,5 @@
 ---
-# handlers for elasticsearch
-- name: reload_daemon_restart_elasticsearch
+- name: Restart elasticsearch
   ansible.builtin.systemd:
     name: elasticsearch
     state: restarted
-    daemon_reload: yes
-    enabled: yes

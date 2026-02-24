@@ -1,6 +1,6 @@
 ---
 
-- name: install monitoring_server
+- name: Install Monitoring Server
   hosts: monitoring_server
   vars_files:
     - defaults/main.yaml
@@ -9,5 +9,5 @@
     - prometheus
     - elasticsearch
     - kibana
-    - node-exporter
+    - node_exporter
     - fluentbit

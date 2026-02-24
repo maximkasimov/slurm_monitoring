@@ -1,14 +1,18 @@
 [Unit]
-Description=Prometheus Service Version {{ prometheus_version }}
-Documentation=https://github.com/prometheus/prometheus
+Description=Prometheus Monitoring
+Documentation=https://prometheus.io/docs/introduction/overview/
+After=network-online.target
+Wants=network-online.target
+
 [Service]
-Restart=always
+Type=simple
 User={{ prometheus_user }}
 Group={{ prometheus_group }}
-EnvironmentFile=/etc/default/{{ environment_file }}
-ExecStart={{ prometheus_path }} $OPTIONS
+ExecStart={{ prometheus_binary_path }} --config.file={{ prometheus_config_dir }}/{{ prometheus_config_file }} --storage.tsdb.path={{ prometheus_data_dir }} --web.listen-address={{ prometheus_web_listen_address }}{% for arg in prometheus_extra_args %} {{ arg }}{% endfor %}
 ExecReload=/bin/kill -HUP $MAINPID
-TimeoutStopSec=20s
-SendSIGKILL=no
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65536
+
 [Install]
 WantedBy=multi-user.target

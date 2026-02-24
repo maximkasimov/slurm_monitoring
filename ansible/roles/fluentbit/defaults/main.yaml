@@ -1,0 +1,19 @@
+---
+# defaults for fluent-bit
+fluentbit_apt_repo: "deb https://packages.fluentbit.io/ubuntu/{{ ansible_distribution_release }} {{ ansible_distribution_release }} main"
+fluentbit_apt_key_url: https://packages.fluentbit.io/fluentbit.key
+
+fluentbit_config_file: /etc/fluent-bit/fluent-bit.conf
+fluentbit_flush_seconds: 1
+fluentbit_log_level: info
+
+fluentbit_journald_tag: host.*
+fluentbit_journald_db: /var/log/fluent-bit-journald.db
+
+fluentbit_output_match: "*"
+fluentbit_output_host: "{{ es_host }}"
+fluentbit_output_port: "{{ es_http_port }}"
+fluentbit_output_index: fluentbit
+fluentbit_output_type: _doc
+fluentbit_output_suppress_type_name: true
+fluentbit_output_retry_limit: false

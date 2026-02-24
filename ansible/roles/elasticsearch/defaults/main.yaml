@@ -1,8 +1,16 @@
 ---
 # defaults for elasticsearch
+elasticsearch_apt_repo: "deb https://artifacts.elastic.co/packages/7.x/apt stable main"
+elasticsearch_apt_repo_file: elastic-7.x
+elasticsearch_apt_key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
 
-debian_elastic_yandex_mirror: https://mirror.yandex.ru/mirrors/elastic/7/
-debian_elastic_sources_file: elastic-7.x
-elastic_path_data: /var/lib/elasticsearch
-elastic_path_logs: /var/log/elasticsearch
-elastic_conf_dir: /etc/elasticsearch
+elasticsearch_conf_dir: /etc/elasticsearch
+elasticsearch_config_file: elasticsearch.yml
+elasticsearch_path_data: /var/lib/elasticsearch
+elasticsearch_path_logs: /var/log/elasticsearch
+
+elasticsearch_cluster_name: monitoring
+elasticsearch_network_host: "{{ es_host }}"
+elasticsearch_http_port: "{{ es_http_port }}"
+elasticsearch_discovery_type: single-node
+elasticsearch_xpack_security_enabled: false

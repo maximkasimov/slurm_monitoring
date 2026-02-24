@@ -1,30 +1,40 @@
 ---
-# tasks file for elasticsearch
-- name: add elasticsearch repo from mirror
-  ansible.builtin.apt_repository:
-    repo: "deb [trusted=yes] {{ debian_elastic_yandex_mirror }} stable main"
+- name: Ensure apt transport dependencies are installed
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
     state: present
-    filename: "{{ debian_elastic_sources_file }}"
+    update_cache: true
 
-- name: Update repositories cache and install elasticsearch
+- name: Add elasticsearch apt key
+  ansible.builtin.apt_key:
+    url: "{{ elasticsearch_apt_key_url }}"
+    state: present
+
+- name: Add elasticsearch apt repository
+  ansible.builtin.apt_repository:
+    repo: "{{ elasticsearch_apt_repo }}"
+    state: present
+    filename: "{{ elasticsearch_apt_repo_file }}"
+
+- name: Install elasticsearch package
   ansible.builtin.apt:
     name: elasticsearch
-    update_cache: yes
-    lock_timeout: 3600
+    state: present
+    update_cache: true
 
-- name: copy elasticsearch configuration
+- name: Install elasticsearch configuration
   ansible.builtin.template:
     src: elasticsearch.yaml.j2
-    dest: "{{ elastic_conf_dir }}/elasticsearch.yaml"
-    owner: elasticsearch
+    dest: "{{ elasticsearch_conf_dir }}/{{ elasticsearch_config_file }}"
+    owner: root
     group: elasticsearch
-    mode: 0660
-  notify: reload_daemon_restart_elasticsearch
+    mode: "0640"
+  notify: Restart elasticsearch
 
-- name: force restart
-  meta: flush_handlers
-
-- name: start elasticsearch service
+- name: Ensure elasticsearch service is enabled and running
   ansible.builtin.systemd:
     name: elasticsearch
     state: started
